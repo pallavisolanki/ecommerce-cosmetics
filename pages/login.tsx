@@ -1,11 +1,12 @@
-'use client';
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+"use client";
+
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Login() {
   const router = useRouter();
-  const [formData, setFormData] = useState({ email: '', password: '' });
-  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -13,29 +14,32 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+      console.log("Login Response:", data); // Debugging API response
 
-      // Save token to localStorage
-      localStorage.setItem('token', data.token);
-      router.push('/');
+      if (!res.ok) {
+        throw new Error(data.message || "Invalid email or password");
+      }
+
+      localStorage.setItem("token", data.token);
+      alert("Login successful!");
+      router.push("/");
     } catch (err: unknown) {
       if (err instanceof Error) {
-        setError(err.message || 'Login failed');
+        setError(err.message || "Login failed");
       } else {
-        setError('An unknown error occurred');
+        setError("An unknown error occurred");
       }
     }
-    
   };
 
   return (

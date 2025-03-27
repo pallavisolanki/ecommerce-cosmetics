@@ -4,6 +4,7 @@ const nextConfig = {
     turbo: {
       enabled: false, // or true if you want it enabled
     },
+    
   },
 };
 

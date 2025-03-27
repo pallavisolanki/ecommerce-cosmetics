@@ -1,10 +1,16 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import "@/app/globals.css";
+import "./globals.css";
+import { Geist } from 'next/font/google'
+ 
+const geist = Geist({
+  subsets: ['latin'],
+})
+
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={geist.className}>
       <head>
         <title>Cosmetics E-commerce</title>
         <meta name="description" content="Shop the best cosmetic products online at amazing prices." />

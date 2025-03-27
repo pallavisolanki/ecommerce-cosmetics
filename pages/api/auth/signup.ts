@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../../../models/User';
 import connectDB from '../../../utils/db';
@@ -17,29 +18,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
     }
 
-    // ✅ Compare Password Using Schema Method
-    console.log("Comparing Password using Schema Method...");
-    const isMatch = await user.comparePassword(password);
-    console.log("Password Match Result:", isMatch);
+    // ✅ Let Mongoose Middleware Handle Hashing
+    const newUser = new User({ email, password });
+    await newUser.save();
 
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
-
-    // ✅ Generate JWT Token
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET!, {
+    const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET!, {
       expiresIn: '1h',
     });
 
-    return res.status(200).json({ token, message: 'Login successful' });
+    return res.status(201).json({ token, message: 'Signup successful' });
 
   } catch (error) {
-    console.error('Login Error:', error);
+    console.error('Signup Error:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 }

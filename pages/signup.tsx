@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/router";
 import Link from "next/link";
 
 export default function Signup() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -17,14 +20,37 @@ export default function Signup() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match");
       return;
     }
-    console.log("Form Data:", formData);
-    alert("Signup Successful!");
+
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(data.message);
+        router.push("/login");
+      } else {
+        alert(data.message || "Signup failed");
+      }
+    } catch (error) {
+      console.error("Signup Error:", error);
+      alert("An error occurred. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -92,14 +118,15 @@ export default function Signup() {
           <button
             type="submit"
             className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white p-3 rounded-lg hover:opacity-90 transition"
+            disabled={loading}
           >
-            Sign Up
+            {loading ? "Signing Up..." : "Sign Up"}
           </button>
         </form>
 
         {/* Sign In Link */}
         <p className="text-center text-gray-600 mt-6">
-          Already have an account?{" "}
+          Already have an account? {" "}
           <Link href="/login" className="text-pink-600 hover:underline">
             Sign In
           </Link>
